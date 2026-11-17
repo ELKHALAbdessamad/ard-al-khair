@@ -14,9 +14,20 @@ La comparaison des octets dans l'archive confirme aussi 6 images de test identiq
 
 Les archives Keras V3 `best` et `latest` ont des métadonnées d'enregistrement distinctes. Les octets de leur fichier interne `model.weights.h5` ont le même SHA-256, `9977339139f27cba228eaedb1a87f558a28a5a1219b2c8ec70be73eb23b5fb62`. Le modèle utilisé pour l'essai est `v3_best.keras`, SHA-256 `020f5864e8dd7301ef09a7b4d072a79218f9b57e8374bb1c54c2ef117eb13c3f`. Il attend une image RGB de 224 × 224 et applique une remise à l'échelle interne de 1/255.
 
-## Essai d'inférence
+## Inférence complète sur CPU
 
-Le chargement sur CPU Apple Silicon a réussi avec Python 3.13.2, TensorFlow 2.21.0 et Keras 3.13.2. Un essai technique sur huit images disponibles de validation, avec décodage JPEG RGB et redimensionnement bilinéaire, a produit 38 scores finis par image et huit classes correctes. Cet essai vérifie l'exécution du modèle. Le prétraitement historique exact reste à retrouver. Le premier passage complet a rencontré une erreur de lecture d'entrée ZIP pendant l'étape de validation. Les métriques ci-dessus proviennent des prédictions historiques.
+Le test a exécuté `v3_best` sur les 8 146 images de la partition d'origine sur CPU Apple Silicon avec Python 3.13.2, TensorFlow 2.21.0, Keras 3.13.2 et NumPy 2.5.5. Les JPEG ont été décodés en RGB et redimensionnés à 224 × 224, en conservant l'échelle 0–255 attendue par le modèle. Le choix du redimensionnement a été fait sur 160 images de validation tirées sans remise avec `numpy.random.default_rng(42)`. Résultats sur cet échantillon de validation, bilinéaire 159/160, plus proche voisin 160/160, bicubique 159/160. Le plus proche voisin a ensuite été appliqué à tout le test. Les images ont été lues dans l'ordre des entrées du ZIP et les prédictions remises dans l'ordre de la partition avant comparaison.
+
+- Test complet — 8 006 prédictions correctes sur 8 146, soit **98,2814 % d'exactitude** et **97,7865 % de F1 macro**.
+- Comparaison avec l'historique — 8 052 classes identiques et **94 divergences**. L'écart absolu moyen entre les scores maximaux est de 0,01311.
+- Le prétraitement historique exact reste introuvable. L'écart observé ne permet pas d'en isoler la cause. La partition conserve le chevauchement par feuille décrit ci-dessus et un test sur des images indépendantes reste nécessaire.
+
+Empreintes d'entrée SHA-256, hors modèle déjà documenté :
+
+- `plantvillage_split_v2.npz` — `c5dc6ee7703cfec34b1997dd660fa9afd61772841a057dea43eae76da188bbb4`
+- `test_predictions_v3.csv` — `9fb4279e39c2094200e20492d2af04d0cde814ab95fb7b751723cf6582653800`
+- `class_names_v2.json` — `16925c0cb74cd5be219eb9e8cf87f0fa4f5c255f49b8db7c865c55050cb7d307`
+
 
 ## Priorités d'évaluation
 
